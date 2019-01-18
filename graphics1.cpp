@@ -304,11 +304,6 @@ void keyboard(unsigned char c, int x, int y)
 	switch (c) 
 	{
 		case 27: // escape character means to quit the program
-			for (size_t w =0;w<circles.size();w++) {
-				std::cout << "Ball " << w << std::endl;
-				std::cout << circles[w].getDeltaX() << std::endl;
-				std::cout << circles[w].getDeltaY() << std::endl;
-			}
 			exit(0);
 			break;
 		case 'b':
@@ -381,9 +376,6 @@ void InitializeMyStuff()
 		double red = (double)(rand() % 100) / 100.0;
 		double green = (double)(rand() % 100) / 100.0;
 		double blue = (double)(rand() % 100) / 100.0;
-		std::cout << "Ball " << i << std::endl;
-		std::cout << deltaX << std::endl;
-		std::cout << deltaY << std::endl;
 		Circle c = Circle(x, y, deltaX, deltaY, radius, red, green, blue);
 		
 		circles.push_back(c);
