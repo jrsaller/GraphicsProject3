@@ -15,7 +15,8 @@
 #include <cstring>
 #include <vector>
 #include <ctime>
-#include "glut.h"
+#include <iostream>
+#include <GL/freeglut.h>
 class Circle{
 private:
 	double x;
@@ -99,7 +100,7 @@ public:
 double screen_x = 700;
 double screen_y = 500;
 std::vector <Circle> circles;
-const double COLLISION_FRICTION = 1.0;
+const double COLLISION_FRICTION = 1;
 
 struct vectortype
 {
@@ -239,41 +240,52 @@ void display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// Test lines that draw all three shapes and some text.
-	// Delete these when you get your code working.
 	for (size_t q = 0; q < circles.size();q++) {
-		std::vector <double> color = circles[q].getColor();
-		glColor3d(color[0], color[1], color[2]);
-		circles[q].setDeltaY(circles[q].getDeltaY() - 0.002);
-		if (circles[q].getX() + circles[q].getRadius() + circles[q].getDeltaX() >= screen_x)
-			//dx = -dx;
-			circles[q].setDeltaX(-circles[q].getDeltaX());
-			
-		if (circles[q].getX() - circles[q].getRadius() + circles[q].getDeltaX() < 0)
-			//dx = -dx;
-			circles[q].setDeltaX(-circles[q].getDeltaX());
-		if (circles[q].getY() + circles[q].getRadius() + circles[q].getDeltaY() >= screen_y)
-			//dy = -dy;
-			circles[q].setDeltaY(-circles[q].getDeltaY());
-		if (circles[q].getY() - circles[q].getRadius() + circles[q].getDeltaY() < 0)
-			//dy = -dy;
-			circles[q].setDeltaY(-circles[q].getDeltaY());
-		
+	//apply gravity, then apply collisions,update x and y, draw	
+		circles[q].setDeltaY(circles[q].getDeltaY() - (5.0 * (circles[q].getNextY() / screen_y)));//(0.002 * circles[q].getNextY()));
 		for (size_t i = 0; i < circles.size();i++) {
 			if (i != q) {
 				double xdist = pow(circles[q].getNextX() - circles[i].getNextX(), 2);
 				double ydist = pow(circles[q].getNextY() - circles[i].getNextY(), 2);
 				double totalDist = pow(xdist + ydist, 0.5);
-				if (totalDist < circles[q].getRadius() + circles[i].getRadius()) {
-					Collide(i, q, circles);
+				if (totalDist <= (circles[q].getRadius() + circles[i].getRadius())) {
+					Collide(q, i, circles);
 					//circles[q].setX(rand() % (int)(screen_x - (2 * circles[q].getRadius())) + circles[q].getRadius());
 				}
 			}
 		}
+		std::vector <double> color = circles[q].getColor();
+		glColor3d(color[0], color[1], color[2]);			//get the color of the ball
+		if (circles[q].getNextX() + circles[q].getRadius() + circles[q].getDeltaX() >= screen_x)
+			//dx = -dx;
+			circles[q].setDeltaX(-circles[q].getDeltaX());
+			
+		if (circles[q].getNextX() - circles[q].getRadius() + circles[q].getDeltaX() < 0)
+			//dx = -dx;
+			circles[q].setDeltaX(-circles[q].getDeltaX());
+		if (circles[q].getNextY() + circles[q].getRadius() + circles[q].getDeltaY() >= screen_y)
+			//dy = -dy;
+			circles[q].setDeltaY(-circles[q].getDeltaY());
+		if (circles[q].getNextY() - circles[q].getRadius() + circles[q].getDeltaY() < 0)
+			//dy = -dy;
+			circles[q].setDeltaY(-circles[q].getDeltaY());
+		
 		circles[q].setX(circles[q].getNextX());
 		circles[q].setY(circles[q].getNextY());
 		//x += dx;
 		//y += dy;
+
+		for (size_t i = 0; i < circles.size();i++) {
+			if (i != q) {
+				double xdist = pow(circles[q].getNextX() - circles[i].getNextX(), 2);
+				double ydist = pow(circles[q].getNextY() - circles[i].getNextY(), 2);
+				double totalDist = pow(xdist + ydist, 0.5);
+				if (totalDist <= (circles[q].getRadius() + circles[i].getRadius())) {
+					Collide(q, i, circles);
+					//circles[q].setX(rand() % (int)(screen_x - (2 * circles[q].getRadius())) + circles[q].getRadius());
+				}
+			}
+		}
 		DrawCircle(circles[q].getX(), circles[q].getY(), circles[q].getRadius());
 	}
 
@@ -292,6 +304,11 @@ void keyboard(unsigned char c, int x, int y)
 	switch (c) 
 	{
 		case 27: // escape character means to quit the program
+			for (size_t w =0;w<circles.size();w++) {
+				std::cout << "Ball " << w << std::endl;
+				std::cout << circles[w].getDeltaX() << std::endl;
+				std::cout << circles[w].getDeltaY() << std::endl;
+			}
 			exit(0);
 			break;
 		case 'b':
@@ -355,33 +372,34 @@ void InitializeMyStuff()
 {
 	srand(time(0));
 	for (int i = 0; i < 10;i++) {
-		double radius = 20;
+		double radius = 20;//rand() % 20 + 10;
 		double x = rand() % (int)(screen_x - (2*radius)) + radius;
 		double y = rand() % (int)(screen_y - (2*radius)) + radius;
-		double deltaX = rand() % 5 / 100.0 - 0.3;
-		double deltaY = rand() % 5 / 100.0 - 0.3;
+		double deltaX = rand() % 10 / 1.0 -5 ;
+		double deltaY = rand() % 10 / 1.0 -5 ;
 		
 		double red = (double)(rand() % 100) / 100.0;
 		double green = (double)(rand() % 100) / 100.0;
 		double blue = (double)(rand() % 100) / 100.0;
+		std::cout << "Ball " << i << std::endl;
+		std::cout << deltaX << std::endl;
+		std::cout << deltaY << std::endl;
 		Circle c = Circle(x, y, deltaX, deltaY, radius, red, green, blue);
 		
 		circles.push_back(c);
 	}
 
 	for (size_t x = 0; x < circles.size(); x++) {
-		for (size_t y = 0; y < circles.size();y++) {
-			if (x != y) {
-				double xdist = pow(circles[x].getX() - circles[y].getX(), 2);
-				double ydist = pow(circles[x].getY() - circles[y].getY(), 2);
-				double totalDist = pow(xdist + ydist, 0.5);
-				while (totalDist < circles[x].getRadius() + circles[y].getRadius()) {
-					//Collide(y, x, circles);
-					circles[x].setX(rand() % (int)(screen_x - (2 * circles[x].getRadius())) + circles[x].getRadius());
-					xdist = pow(circles[x].getX() - circles[y].getX(), 2);
-					ydist = pow(circles[x].getY() - circles[y].getY(), 2);
-					totalDist = pow(xdist + ydist, 0.5);
-				}
+		for (size_t y = x+1; y < circles.size();y++) {
+			double xdist = pow(circles[x].getX() - circles[y].getX(), 2);
+			double ydist = pow(circles[x].getY() - circles[y].getY(), 2);
+			double totalDist = pow(xdist + ydist, 0.5);
+			while (totalDist < circles[x].getRadius() + circles[y].getRadius()) {
+				circles[x].setX(rand() % (int)(screen_x - (2 * circles[x].getRadius())) + circles[x].getRadius());
+				circles[x].setY(rand() % (int)(screen_y - (2 * circles[x].getRadius())) + circles[x].getRadius());
+				xdist = pow(circles[x].getX() - circles[y].getX(), 2);
+				ydist = pow(circles[x].getY() - circles[y].getY(), 2);
+				totalDist = pow(xdist + ydist, 0.5);
 			}
 		}
 	}
