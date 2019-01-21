@@ -367,7 +367,7 @@ void InitializeMyStuff()
 {
 	srand(time(0));
 	for (int i = 0; i < 10;i++) {
-		double radius = 20;//rand() % 20 + 10;
+		double radius = rand() % 20 + 10;
 		double x = rand() % (int)(screen_x - (2*radius)) + radius;
 		double y = rand() % (int)(screen_y - (2*radius)) + radius;
 		double deltaX = rand() % 10 / 1.0 -5 ;
